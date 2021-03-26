@@ -1,6 +1,7 @@
 package com.lagou.service;
 
 import com.github.pagehelper.PageInfo;
+import com.lagou.domain.ResponseResult;
 import com.lagou.domain.Role;
 import com.lagou.domain.User;
 import com.lagou.domain.UserVO;
@@ -16,4 +17,8 @@ public interface UserService {
   public List<Role> findUserRelationRoleById(Integer id);
 
   public void userContextRole(UserVO userVO);
+
+  public ResponseResult getUserPermissions(Integer userId);
+
+  public void register(User user) throws Exception;
 }

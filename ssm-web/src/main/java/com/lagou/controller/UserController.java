@@ -8,10 +8,7 @@ import com.lagou.domain.UserVO;
 import com.lagou.service.UserService;
 import com.lagou.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -69,4 +66,29 @@ public class UserController {
     return new ResponseResult(true,200,"添加用户角色成功",null);
 
   }
+
+  @RequestMapping("/getUserPermissions")
+  public ResponseResult getUserPermissions(HttpServletRequest request){
+    String header_token = request.getHeader("Authorization");
+    String access_token = (String) request.getSession().getAttribute("access_token");
+    if(header_token.equals(access_token)){
+      Integer user_id = (Integer) request.getSession().getAttribute("user_id");
+      ResponseResult responseResult = userService.getUserPermissions(user_id);
+      return responseResult;
+    }else {
+      return new ResponseResult(false,400,"获取用户权限失败",null);
+    }
+  }
+
+  @RequestMapping("/register")
+  public ResponseResult register(@RequestBody User user) throws Exception {
+    User login = userService.login(user);
+    if(login != null){
+      return new ResponseResult(false,200,"该用户已注册",null);
+    }else {
+      userService.register(user);
+      return new ResponseResult(true,200,"注册成功",null);
+    }
+  }
+
 }

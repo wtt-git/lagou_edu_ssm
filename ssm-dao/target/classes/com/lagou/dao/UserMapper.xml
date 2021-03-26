@@ -34,6 +34,32 @@
   <insert id="userContextRole" parameterType="com.lagou.domain.User_Role_relation">
     insert into user_role_relation values (null,#{userId},#{roleId},#{createdTime},#{updatedTime},#{createdBy},#{updatedBy})
   </insert>
+
+  <select id="findParentMenuByRoleId" parameterType="java.util.List" resultType="com.lagou.domain.Menu">
+    SELECT DISTINCT m.* FROM roles r INNER JOIN role_menu_relation rm ON r.`id` = rm.role_id
+    INNER JOIN menu m ON rm.menu_id = m.id WHERE m.parent_id = -1 AND r.id IN
+    <foreach collection="list" item="item" open="(" separator="," close=")">
+     #{item}
+    </foreach>
+    GROUP BY m.id
+  </select>
+
+  <select id="findSubMenuByPid" parameterType="int" resultType="com.lagou.domain.Menu">
+    select * from menu where parent_id = #{pid}
+  </select>
+
+  <select id="findResourceByRoleId" parameterType="java.util.List" resultType="com.lagou.domain.Resource">
+    select distinct r.* from resource r inner join role_resource_relation rr on r.id = rr.resource_id
+                                        inner join roles ro on ro.id = rr.role_id
+                                        where ro.id in
+                                        <foreach collection="list" item="item" open="(" separator="," close=")">
+                                          #{item}
+                                        </foreach>
+  </select>
+
+  <insert id="register" parameterType="com.lagou.domain.User">
+    insert into user(phone,password,name,create_time,update_time) values (#{phone},#{password},#{name},#{create_time},#{update_time});
+  </insert>
 </mapper>
 
 

@@ -3,17 +3,14 @@ package com.lagou.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.lagou.dao.UserMapper;
-import com.lagou.domain.Role;
-import com.lagou.domain.User;
-import com.lagou.domain.UserVO;
-import com.lagou.domain.User_Role_relation;
+import com.lagou.domain.*;
 import com.lagou.service.UserService;
 import com.lagou.utils.Md5;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -60,5 +57,33 @@ public class UserServiceImpl implements UserService {
       user_role_relation.setUpdatedBy("system");
       userMapper.userContextRole(user_role_relation);
     }
+  }
+
+  @Override
+  public ResponseResult getUserPermissions(Integer userId) {
+    List<Role> roleList = userMapper.findUserRelationRoleById(userId);
+    List<Integer> roleIds = new ArrayList<>();
+    for (Role role : roleList) {
+      roleIds.add(role.getId());
+    }
+    List<Menu> parentMenu = userMapper.findParentMenuByRoleId(roleIds);
+    for (Menu menu : parentMenu) {
+      List<Menu> subMenu = userMapper.findSubMenuByPid(menu.getId());
+      menu.setSubMenuList(subMenu);
+    }
+    List<Resource> resourceList = userMapper.findResourceByRoleId(roleIds);
+    Map<String, Object> map = new HashMap<>();
+    map.put("menuList",parentMenu);
+    map.put("resourceList",resourceList);
+    return new ResponseResult(true,200,"获取用户权限成功",map);
+  }
+
+  @Override
+  public void register(User user) throws Exception {
+    user.setPassword(Md5.md5(user.getPassword(),"lagou"));
+    Date date = new Date();
+    user.setCreate_time(date);
+    user.setUpdate_time(date);
+    userMapper.register(user);
   }
 }
